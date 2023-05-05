@@ -39,7 +39,7 @@ Laia Rubio Castro - <a href="https://github.com/laiarubiio">laiarubiio</a> <br /
 
 ## Version History
 * 0.1
-    * Initial Release
+    * Initial Release: Organization of repository + <i>makeDataset.py</i> uploaded
  
 
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
