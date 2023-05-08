@@ -9,7 +9,7 @@ head = image.shape
 
 # definir elemento estructurante
 kernel = np.ones((30,30), np.uint8)
-kernel2 = np.ones((3,3), np.uint8)
+kernel2 = np.ones((2,2), np.uint8)
 
 
 for i in range(head[0]):
@@ -42,11 +42,11 @@ for i in range(head[0]):
         else:
             image[i, j] = [255, 255, 255]  # set pixel color to white
 
-# dilatar imagen
+"""# dilatar imagen
 image = cv2.dilate(image, kernel, iterations=1)
 cv2.imshow('Skin Pixel Detection', image)
 cv2.waitKey(0)
-cv2.destroyAllWindows()
+cv2.destroyAllWindows()"""
 
 image = cv2.imread('code/img0.jpg')
 
@@ -68,11 +68,11 @@ mask_inv = cv2.bitwise_not(mask)
 # Apply the inverted mask to the original image
 result = cv2.bitwise_and(image, image, mask=mask_inv)
 
-
+"""
 # Show the result
 cv2.imshow('Skin Pixel Detection', result)
 cv2.waitKey(0)
-cv2.destroyAllWindows()
+cv2.destroyAllWindows()"""
 
 
 # Convert the result to grayscale
@@ -91,7 +91,7 @@ erosion = cv2.erode(dilation, kernel, iterations=1)
 
 erosion = cv2.dilate(erosion, kernel, iterations=1)
 
-# mostrar resultados
+"""# mostrar resultados
 cv2.imshow('Original', binary)
 cv2.imshow('Erosion', erosion)
 #cv2.imshow('Dilatacion', dilation)
@@ -100,7 +100,7 @@ cv2.destroyAllWindows()
 # Show the result
 cv2.imshow('Skin Pixel Detection', binary)
 cv2.waitKey(0)
-cv2.destroyAllWindows()
+cv2.destroyAllWindows()"""
 
 hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 H = np.array(hsv_img[:, :, 0])
@@ -125,8 +125,8 @@ h[h < 0] += 360
 skin_mask = np.zeros_like(H, dtype=np.uint8)
 skin_mask[(h >= thresh1) & (h <= thresh2)] = 255
 masked_img = cv2.bitwise_and(image, image, mask=skin_mask)
-cv2.imshow('Masked Image', masked_img)
-cv2.waitKey(0)
+#cv2.imshow('Masked Image', masked_img)
+#cv2.waitKey(0)
 
 
 """
@@ -161,14 +161,15 @@ cv2.imshow('output_image', image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 """
-image = cv2.imread('code/img.jpg')
+image = cv2.imread('code/imgtest.jpg')
+src = image
 
-#image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # umbraliza la imagen
+image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # umbraliza la imagen
 # remove noise
 image = cv2.GaussianBlur(image,(3,3),0)
 #_, image = cv2.threshold(image, 150, 255, cv2.THRESH_BINARY)  # umbraliza la imagen
-cv2.imshow('Masked Image', image)
-cv2.waitKey(0)
+#cv2.imshow('Masked Image', image)
+#cv2.waitKey(0)
 #_, image = cv2.threshold(image, 100, 255, cv2.THRESH_BINARY)  # umbraliza la imagen
 sobel = cv2.Sobel(image,cv2.CV_64F,1,1,ksize=5)
 
@@ -176,8 +177,8 @@ sobel_abs = np.absolute(sobel)  # toma el valor absoluto de la imagen
 sobel_uint = np.uint8(sobel_abs)  # convierte la imagen a uint8
 _, sobel_uint = cv2.threshold(sobel_uint, 60, 255, cv2.THRESH_BINARY)  # umbraliza la imagen
 #sobel_uint = cv2.erode(sobel_uint, kernel2, iterations=1)
-cv2.imshow('Masked Image', sobel_uint)
-cv2.waitKey(0)
+#cv2.imshow('Masked Image', sobel_uint)
+#cv2.waitKey(0)
 
 """
 # Apply gray scale
@@ -224,3 +225,37 @@ plt.title('Butterfly')
 plt.imsave('Butterfly.jpg', newgradientImage, cmap='gray', format='jpg')
 plt.imshow(newgradientImage, cmap='gray')
 plt.show()"""
+src = cv2.GaussianBlur(src, (3, 3), 0)
+scale = 1
+delta = 0
+ddepth = cv2.CV_16S
+window_name = ('Sobel Demo - Simple Edge Detector')  
+    
+gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+    
+    
+grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize=3, scale=scale, delta=delta, borderType=cv2.BORDER_DEFAULT)
+    # Gradient-Y
+# grad_y = cv2.Scharr(gray,ddepth,0,1)
+grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize=3, scale=scale, delta=delta, borderType=cv2.BORDER_DEFAULT)
+    
+
+abs_grad_x = cv2.convertScaleAbs(grad_x)
+abs_grad_y = cv2.convertScaleAbs(grad_y)
+#_, abs_grad_x = cv2.threshold(abs_grad_x, 60, 255, cv2.THRESH_BINARY)  # umbraliza la imagen
+#abs_grad_x = cv2.erode(abs_grad_x, kernel2, iterations=1)
+#_, abs_grad_y = cv2.threshold(abs_grad_y, 60, 255, cv2.THRESH_BINARY)  # umbraliza la imagen
+#abs_grad_y = cv2.erode(abs_grad_y, kernel2, iterations=1)
+cv2.imshow("grad x", abs_grad_x)
+cv2.waitKey(0)
+cv2.imshow("grad y", abs_grad_y)
+cv2.waitKey(0)    
+    
+grad = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
+_, grad = cv2.threshold(grad, 30, 255, cv2.THRESH_BINARY)  # umbraliza la imagen
+cv2.imshow("grad", grad)
+grad = cv2.erode(grad, kernel2, iterations=2)
+#grad = cv2.dilate(grad, kernel, iterations=1)
+cv2.imshow(window_name, grad)
+cv2.waitKey(0)
+    
