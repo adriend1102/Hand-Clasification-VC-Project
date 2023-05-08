@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-image = cv2.imread('input_image.jpg')
+image = cv2.imread('code/input_image.jpg')
 thresh1 = 0
 thresh2 = 255
 head = image.shape

@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-image = cv2.imread('imgtest.jpg')
+image = cv2.imread('code/input_image.jpg')
 thresh1 = 0
 thresh2 = 255
 head = image.shape
@@ -98,5 +98,36 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 # Show the result
 cv2.imshow('Skin Pixel Detection', binary)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+# Define display_contour variable
+display_contour = True
+
+# Iterate through each pixel in the image
+for i in range(1, head[0]):
+    for j in range(1, head[1]):
+        # Read current pixel and previous pixel
+        current_pixel = image[i, j]
+        previous_pixel = image[i-1, j-1]
+        
+        # Check if current pixel is the same color as previous pixel
+        if (current_pixel == previous_pixel).all():
+            previous_pixel = current_pixel
+        # If not, check if current pixel is white
+        elif (current_pixel == [255, 255, 255]).all():
+            # Mark previous pixel as border pixel
+            image[i-1, j-1] = [0, 0, 0]
+        # Otherwise, mark current pixel as border pixel
+        else:
+            # Mark current pixel as border pixel
+            image[i, j] = [0, 0, 0]
+        
+        # If display_contour is enabled, change border pixel color to yellow
+        if display_contour == '1' and (image[i, j] == [0, 0, 0]).all():
+            image[i, j] = [0, 255, 255]
+
+# Show output image
+cv2.imshow('output_image', image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
