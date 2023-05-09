@@ -40,20 +40,21 @@ def Sobel(src):
 if __name__ == '__main__':
     
     listSignsDirectory = ["sign_1", "sign_2", "sign_3", "sign_4", "sign_5"]
-    listNEWSignsDirectory = ["signBin_1", "signBin_2", "signBin_3", "signBin_4", "signBin_5"]
+    listSignsDirectorySobel = ["signSobel_1", "signSobel_2", "signSobel_3", "signSobel_4", "signSobel_5"]
     
     print("Applying Sobel to frames...\n")
-    for directory, new in zip(listSignsDirectory, listNEWSignsDirectory):
+    for directory, new in zip(listSignsDirectory, listSignsDirectorySobel): #Nueva lista en zip
         
         relativePath = "../dataset/" + directory
         print("Transforming images from " + relativePath)
         
-        for frame in range(len(os.listdir(os.path.abspath(relativePath)))):
+        for frame in range(len(os.listdir(os.path.abspath(relativePath)))): 
             imSobel = Sobel(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
+            #imNueva = ...
+            
             cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imSobel)
+            #cv2.imwrite ...
         
         print("New images saved in " + new + "\n")
-
-    
-
-
+        
+        
