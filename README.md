@@ -38,6 +38,10 @@ Laia Rubio Castro - <a href="https://github.com/laiarubiio">laiarubiio</a> <br /
 
 
 ## Version History
+* 1.1
+    * Initial version handClasification.py added
+* 1.0
+    * makeDataset.py and handSegmentation.py added
 * 0.1
     * Initial Release: Organization of repository + <i>makeDataset.py</i> uploaded
  
