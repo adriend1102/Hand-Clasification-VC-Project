@@ -6,6 +6,7 @@ Hand Segmentation
 import os
 import cv2
 import numpy as np
+from skimage.filters import (threshold_otsu, threshold_niblack,threshold_sauvola)
 
 
 def Sobel(src):
@@ -36,12 +37,46 @@ def Sobel(src):
     
     return grad
 
+def color_filter(src):
+    img_HSV = cv2.cvtColor(src, cv2.COLOR_RGB2HSV)
+
+    Lfilter = (0,10,20)
+    Hfilter = (20,155,255)
+
+    mask = cv2.inRange(img_HSV,Lfilter,Hfilter)
+    hand = cv2.bitwise_and(src, src, mask=mask)
+
+    kernel = np.ones((3, 3), np.uint8)
+    hand = cv2.morphologyEx(hand, cv2.MORPH_OPEN, kernel)
+    hand = cv2.morphologyEx(hand, cv2.MORPH_CLOSE, kernel)
+
+    return hand
+
+def canny(src):
+
+    gray_image = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+
+    gauss = cv2.GaussianBlur(gray_image, (5, 5), 0)
+    cannyIm = cv2.Canny(gauss, 50, 150)
+
+    return cannyIm
+
+def otsu(src):
+    gray_image = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+
+    _, thresh = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    hand = cv2.erode(thresh, np.ones((2,2), np.uint8), iterations=2)
+
+    return hand
 
 if __name__ == '__main__':
     
     listSignsDirectory = ["sign_1", "sign_2", "sign_3", "sign_4", "sign_5"]
     listSignsDirectorySobel = ["signSobel_1", "signSobel_2", "signSobel_3", "signSobel_4", "signSobel_5"]
-    
+    listSignsDirectoryColorFilter = ["signCF_1", "signCF_2", "signCF_3", "signCF_4", "signCF_5"]
+    listSignsDirectoryCanny = ["signCanny_1", "signCanny_2", "signCanny_3", "signCanny_4", "signCanny_5"]
+    listSignsDirectoryOtsu = ["signOtsu_1", "signOtsu_2", "signOtsu_3", "signOtsu_4", "signOtsu_5"]
+
     print("Applying Sobel to frames...\n")
     for directory, new in zip(listSignsDirectory, listSignsDirectorySobel): #Nueva lista en zip
         
@@ -50,11 +85,55 @@ if __name__ == '__main__':
         
         for frame in range(len(os.listdir(os.path.abspath(relativePath)))): 
             imSobel = Sobel(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
-            #imNueva = ...
             
             cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imSobel)
-            #cv2.imwrite ...
+            # cv2.imwrite ...
         
         print("New images saved in " + new + "\n")
+    
+    print("Applying Color Filter to frames...\n")
+    for directory, new in zip(listSignsDirectory, listSignsDirectoryColorFilter):  # Nueva lista en zip
+
+        relativePath = "../dataset/" + directory
+        print("Transforming images from " + relativePath)
+
+        for frame in range(len(os.listdir(os.path.abspath(relativePath)))):
+            imCF = color_filter(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
+
+            cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imCF)
+            # cv2.imwrite ...
+
+        print("New images saved in " + new + "\n")
+
+    
+    print("Applying Canny to frames...\n")
+    for directory, new in zip(listSignsDirectory, listSignsDirectoryCanny):  # Nueva lista en zip
+
+        relativePath = "../dataset/" + directory
+        print("Transforming images from " + relativePath)
+
+        for frame in range(len(os.listdir(os.path.abspath(relativePath)))):
+            imCanny = canny(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
+
+            cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imCanny)
+            # cv2.imwrite ...
+
+        print("New images saved in " + new + "\n")
+
+    print("Applying Otsu to frames...\n")
+    for directory, new in zip(listSignsDirectory, listSignsDirectoryOtsu):  # Nueva lista en zip
+
+        relativePath = "../dataset/" + directory
+        print("Transforming images from " + relativePath)
+
+        for frame in range(len(os.listdir(os.path.abspath(relativePath)))):
+            imOtsu = otsu(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
+
+            cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imOtsu)
+
+
+        print("New images saved in " + new + "\n")
+
+
         
         
