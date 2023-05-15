@@ -4,15 +4,16 @@ Hand Clasification from segmented images
 """
 
 import cv2
-import numpy as np
+#import numpy as np
 import os
 import random
 import time
 import seaborn as sn
 import matplotlib.pyplot as plt
 
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import plot_confusion_matrix
+from skimage.feature import hog
+
+from sklearn.metrics import confusion_matrix, classification_report
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
@@ -25,10 +26,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def extractFeatures(train, test):
-    pass
-
-
+# Split dataset
 def getTrainTest(listSignsDirectory, sampleDiv, pTrain, typeIm):
     
     train = []
@@ -52,11 +50,11 @@ def getTrainTest(listSignsDirectory, sampleDiv, pTrain, typeIm):
         # Reading random sample
         for frame in sample[:nTrain]:
             t = cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg", typeIm)
-            train.append(cv2.resize(t, (100,150)).flatten())
+            train.append(t)
             
         for frame in sample[nTrain:]:
             t = cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg", typeIm)
-            test.append(cv2.resize(t, (100,150)).flatten())
+            test.append(t)
             
         trainLabels.append( [directory] * nTrain)
         testLabels.append( [directory] * (round(nFiles/sampleDiv) - nTrain))
@@ -77,131 +75,236 @@ def getTrainTest(listSignsDirectory, sampleDiv, pTrain, typeIm):
     return train, trainLabels, test, testLabels
 
 
+# Get Hog descriptor
+def hogDescriptor(train, test):
+    
+    print("Obtaining hog feature descriptors...")
+    
+    featuresTrain = []
+    featuresTest = [] 
+    
+    # Train
+    for frame in train:
+        fd, im = hog(frame, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1), visualize=True)
+        featuresTrain.append(fd)
+    
+    # Test
+    for frame in test:
+        fd, im = hog(frame, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1), visualize=True)
+        featuresTest.append(fd)
+    
+    return featuresTrain, featuresTest
+
+
 
 if __name__ == '__main__':
     
     listSignsDirectory = ["signSobel_1", "signSobel_2", "signSobel_3", "signSobel_4", "signSobel_5"]
-    train, trainLabels, test, testLabels = getTrainTest(listSignsDirectory, 4, 0.8,cv2.IMREAD_GRAYSCALE)
-    #train, test = extractFeatures(train, test)
+    #listSignsDirectory = ["signCF_1", "signCF_2", "signCF_3", "signCF_4", "signCF_5"]
+    #listSignsDirectory = ["signCanny_1", "signCanny_2", "signCanny_3", "signCanny_4", "signCanny_5"]
+    #listSignsDirectory = ["signOtsu_1", "signOtsu_2", "signOtsu_3", "signOtsu_4", "signOtsu_5"]
+    train, trainLabels, test, testLabels = getTrainTest(listSignsDirectory, 4, 0.8, cv2.IMREAD_GRAYSCALE)
+    
+    # Obtain features
+    trainHOG, testHOG = hogDescriptor(train, test)
+      
+    # Flatten train - test
+    train = list(map(lambda x: cv2.resize(x, (x.shape[0], x.shape[1])).flatten(), train))
+    test = list(map(lambda x: cv2.resize(x, (x.shape[0], x.shape[1])).flatten(), test))
+    
     
     # CLASIFICATION #####################################################################
-    
+
     t0 = time.time()
-    print("-- Model KNN --")
+    print("\n------ Model KNN ------")
+    
+    print("Sense Features")
     knn = KNeighborsClassifier(n_neighbors=5)
     knn.fit(train, trainLabels)
     knn_predictions = knn.predict(test)
     tKnn = time.time() - t0
     
-    cmKnn = confusion_matrix(testLabels, knn_predictions)
     plt.figure(figsize = (10,7))
-    sn.heatmap(cmKnn, annot=True,cmap="OrRd")
+    sn.heatmap(confusion_matrix(testLabels, knn_predictions), annot=True,cmap="OrRd")
     plt.title("Confusion Matrix Knn")
-    
-    accKnn = knn.score(test, testLabels)
-    print("Mean accuracy: " + str(accKnn))
+    print("\n", classification_report(testLabels, knn_predictions))
     print("Temps: " + str(tKnn) + "\n")
 
+
+    print("Amb HOG Features")
+    knn = KNeighborsClassifier(n_neighbors=5)
+    knn.fit(trainHOG, trainLabels)
+    knn_predictionsHOG = knn.predict(testHOG)
+    tKnn = time.time() - t0
+    
+    plt.figure(figsize = (10,7))
+    sn.heatmap(confusion_matrix(testLabels, knn_predictionsHOG), annot=True,cmap="OrRd")
+    plt.title("Confusion Matrix Knn + HOG Features")
+    print("\n", classification_report(testLabels, knn_predictionsHOG))
+    print("Temps: " + str(tKnn) + "\n")
+         
+    
     #####################################################################################
 
     t0 = time.time()
-    print("-- Logistic Regression --")
+    print("\n------ Logistic Regression ------")
+    
+    print("Sense Features")
     lr = LogisticRegression(random_state=0)
     lr.fit(train, trainLabels)
     lr_predictions = lr.predict(test)
     tLr = time.time() - t0
     
-    cmLr = confusion_matrix(testLabels, lr_predictions)
     plt.figure(figsize = (10,7))
-    sn.heatmap(cmLr, annot=True,cmap="OrRd")
-    plt.title("Confusion Matrix Logistic Regression")
+    sn.heatmap(confusion_matrix(testLabels, lr_predictions), annot=True, cmap="OrRd")
+    plt.title("Confusion Matrix Logistic Regression") 
+    print("\n", classification_report(testLabels, lr_predictions))
+    print("Temps: " + str(tLr) + "\n")
     
-    accLr = lr.score(test, testLabels)
-    print("Mean accuracy: " + str(accLr))
+    
+    print("Amb Features")
+    lr = LogisticRegression(random_state=0)
+    lr.fit(trainHOG, trainLabels)
+    lr_predictionsHOG = lr.predict(testHOG)
+    tLr = time.time() - t0
+    
+    plt.figure(figsize = (10,7))
+    sn.heatmap(confusion_matrix(testLabels, lr_predictionsHOG), annot=True, cmap="OrRd")
+    plt.title("Confusion Matrix Logistic Regression + HOG Features")
+    print("\n", classification_report(testLabels, lr_predictionsHOG))
     print("Temps: " + str(tLr) + "\n")
 
+    
     #####################################################################################
     
     t0 = time.time()
-    print("-- Model Gaussian Naive Bayes --")
+    print("\n------ Model Gaussian Naive Bayes ------")
+    
+    print("Sense Features")
     gnb = GaussianNB()
     gnb.fit(train, trainLabels)
     gnb_predictions = gnb.predict(test)
     tGnb = time.time() - t0
      
-    cmGnb = confusion_matrix(testLabels, gnb_predictions)
     plt.figure(figsize = (10,7))
-    sn.heatmap(cmGnb, annot=True,cmap="OrRd")
+    sn.heatmap(confusion_matrix(testLabels, gnb_predictions), annot=True, cmap="OrRd")
     plt.title("Confusion Matrix Gaussian Naive Bayes")
-    
-    accGnb = gnb.score(test, testLabels)
-    print("Mean accuracy: " + str(accGnb))
+    print("\n", classification_report(testLabels, gnb_predictions))
     print("Temps: " + str(tGnb) + "\n")
     
+    
+    print("Amb Features")
+    gnb = GaussianNB()
+    gnb.fit(trainHOG, trainLabels)
+    gnb_predictionsHOG = gnb.predict(testHOG)
+    tGnb = time.time() - t0
+     
+    plt.figure(figsize = (10,7))
+    sn.heatmap(confusion_matrix(testLabels, gnb_predictionsHOG), annot=True, cmap="OrRd")
+    plt.title("Confusion Matrix Gaussian Naive Bayes + HOG Features")
+    print("\n", classification_report(testLabels, gnb_predictionsHOG))
+    print("Temps: " + str(tGnb) + "\n")
+    
+
     #####################################################################################
     
     t0 = time.time()
-    print("-- Model Decision Tree --")
+    print("\n------ Model Decision Tree ------")
+    
+    print("Sense Features")
     dtree = DecisionTreeClassifier(max_depth = 2)
     dtree.fit(train, trainLabels)
     dtree_predictions = dtree.predict(test) 
     tDt = time.time() - t0
     
-    cmDt = confusion_matrix(testLabels, dtree_predictions)
     plt.figure(figsize = (10,7))
-    sn.heatmap(cmDt, annot=True,cmap="OrRd")
+    sn.heatmap(confusion_matrix(testLabels, dtree_predictions), annot=True, cmap="OrRd")
     plt.title("Confusion Matrix Decision Tree")
-    
-    accDt = dtree.score(test, testLabels)
-    print("Mean accuracy: " + str(accDt))
+    print("\n", classification_report(testLabels, dtree_predictions))
     print("Temps: " + str(tDt) + "\n")
     
+    
+    print("Amb Features")
+    dtree = DecisionTreeClassifier(max_depth = 2)
+    dtree.fit(trainHOG, trainLabels)
+    dtree_predictionsHOG = dtree.predict(testHOG) 
+    tDt = time.time() - t0
+    
+    plt.figure(figsize = (10,7))
+    sn.heatmap(confusion_matrix(testLabels, dtree_predictionsHOG), annot=True, cmap="OrRd")
+    plt.title("Confusion Matrix Decision Tree + HOG Features")
+    print("\n", classification_report(testLabels, dtree_predictionsHOG))
+    print("Temps: " + str(tDt) + "\n")
+    
+
     #####################################################################################
     
     t0 = time.time()
-    print("-- Model Random Forest Classifier --")
+    print("\n------ Model Random Forest Classifier ------")
+    
+    print("Sense Features")
     rf = RandomForestClassifier(max_depth=2, random_state=0)
     rf.fit(train, trainLabels)
     rf_predictions = rf.predict(test) 
     tRf = time.time() - t0
     
-    cmRf = confusion_matrix(testLabels, rf_predictions)
     plt.figure(figsize = (10,7))
-    sn.heatmap(cmRf, annot=True,cmap="OrRd")
+    sn.heatmap(confusion_matrix(testLabels, rf_predictions), annot=True, cmap="OrRd")
     plt.title("Confusion Matrix Random Forest Classifier")
+    print("\n", classification_report(testLabels, rf_predictions))
+    print("Temps: " + str(tRf) + "\n")
+
+
+    print("Amb Features")
+    rf = RandomForestClassifier(max_depth=2, random_state=0)
+    rf.fit(trainHOG, trainLabels)
+    rf_predictionsHOG = rf.predict(testHOG) 
+    tRf = time.time() - t0
     
-    accRf = rf.score(test, testLabels)
-    print("Mean accuracy: " + str(accRf))
+    plt.figure(figsize = (10,7))
+    sn.heatmap(confusion_matrix(testLabels, rf_predictionsHOG), annot=True, cmap="OrRd")
+    plt.title("Confusion Matrix Random Forest Classifier + HOG Features")
+    print("\n", classification_report(testLabels, rf_predictionsHOG))
     print("Temps: " + str(tRf) + "\n")
     
+
     #####################################################################################
     
     t0 = time.time()
-    print("-- Model Super Vector Machine (lineal) --")
+    print("\n------ Model Super Vector Machine (lineal) ------")
+    
+    print("Sense Features")
     svm = SVC(kernel = 'linear', C = 1)
     svm.fit(train, trainLabels)
     svm_predictions = svm.predict(test)
     tSvm = time.time() - t0
     
-    cmSvm = confusion_matrix(testLabels, svm_predictions)
     plt.figure(figsize = (10,7))
-    sn.heatmap(cmSvm, annot=True,cmap="OrRd")
+    sn.heatmap(confusion_matrix(testLabels, svm_predictions), annot=True, cmap="OrRd")
     plt.title("Confusion Matrix Super Vector Machine (lineal)")
+    print("\n", classification_report(testLabels, svm_predictions))
+    print("Temps: " + str(tSvm) + "\n")
     
-    accSvm = svm.score(test, testLabels)
-    print("Mean accuracy: " + str(accSvm))
+    
+    print("Amb Features")
+    svm = SVC(kernel = 'linear', C = 1)
+    svm.fit(trainHOG, trainLabels)
+    svm_predictionsHOG = svm.predict(testHOG)
+    tSvm = time.time() - t0
+    
+    plt.figure(figsize = (10,7))
+    sn.heatmap(confusion_matrix(testLabels, svm_predictionsHOG), annot=True, cmap="OrRd")
+    plt.title("Confusion Matrix Super Vector Machine (lineal) + HOG Features")
+    print("\n", classification_report(testLabels, svm_predictionsHOG))
     print("Temps: " + str(tSvm) + "\n")
     
     #####################################################################################
 
     t0 = time.time()
-    print("-- Model CNN --")
+    print("\n------ Model CNN ------")
     tSvm = time.time() - t0
-    
-
-    
-    accSvm = svm.score(test, testLabels)
-    print("Mean accuracy: " + str(accSvm))
     print("Temps: " + str(tSvm) + "\n")
     
     #####################################################################################
+    
+    
