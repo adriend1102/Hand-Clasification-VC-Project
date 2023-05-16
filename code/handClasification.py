@@ -126,6 +126,60 @@ class myCallback(tf.keras.callbacks.Callback):
             self.model.stop_training = True
 
 callbacks = myCallback()
+def getTrainTestCNN(listSignsDirectory, sampleDiv, pTrain, typeIm):
+    
+    train = []
+    test = []
+    trainLabels = []
+    testLabels = []
+    
+    for directory in listSignsDirectory:
+        
+        relativePath = "dataset/" + directory
+        
+        # Get number frames
+        nFiles = len(os.listdir(os.path.abspath(relativePath)))   
+        
+        # Random sample of Data for Train - Test
+        sample = random.sample(range(1,nFiles), round(nFiles/sampleDiv))
+        nTrain = int(round(round(nFiles/sampleDiv)*pTrain))
+        
+        print("Reading " + str(round(nFiles/sampleDiv)) + " random frames from " + relativePath)
+        
+        # Reading random sample
+        for frame in sample[:nTrain]:
+            img = cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg", typeIm)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            train.append(img)
+            
+        for frame in sample[nTrain:]:
+            img = cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg", typeIm)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            test.append(img)
+        #Hacemos one_hot encode
+        one_hot = [0] * 5
+        one_hot[int(directory[-1]) - 1] = 1
+        trainLabels.append( [one_hot] * nTrain)
+        testLabels.append( [one_hot] * (round(nFiles/sampleDiv) - nTrain))
+        
+    
+    trainLabels = [item for sublist in trainLabels for item in sublist]
+    testLabels = [item for sublist in testLabels for item in sublist]
+    #Hacemos one_hot encode
+    #one_hot = [0] * 5
+    #one_hot[code - 1] = 1
+    #y.append(one_hot)
+    
+    print("Shuffling data...\n")   
+    zipped = list(zip(train, trainLabels))
+    random.shuffle(zipped)
+    train, trainLabels = zip(*zipped)
+
+    zipped = list(zip(test, testLabels))
+    random.shuffle(zipped)
+    test, testLabels = zip(*zipped)
+    
+    return train, trainLabels, test, testLabels
 
 # Split dataset
 def getTrainTest(listSignsDirectory, sampleDiv, pTrain, typeIm):
@@ -137,7 +191,7 @@ def getTrainTest(listSignsDirectory, sampleDiv, pTrain, typeIm):
     
     for directory in listSignsDirectory:
         
-        relativePath = "../dataset/" + directory
+        relativePath = "dataset/" + directory
         
         # Get number frames
         nFiles = len(os.listdir(os.path.abspath(relativePath)))   
@@ -400,8 +454,12 @@ if __name__ == '__main__':
     print("Temps: " + str(tSvm) + "\n")
     
     #####################################################################################
-    listSignsDirectory = ["sign_1", "sign_2", "sign_3", "sign_4", "sign_5"]
-    train, trainLabels, test, testLabels = getTrainTest(listSignsDirectory, 4, 0.8,cv2.COLOR_BGR2RGB)
+    #listSignsDirectory = ["sign_1", "sign_2", "sign_3", "sign_4", "sign_5"]
+    listSignsDirectory = ["signSobel_1", "signSobel_2", "signSobel_3", "signSobel_4", "signSobel_5"]
+    #listSignsDirectory = ["signCF_1", "signCF_2", "signCF_3", "signCF_4", "signCF_5"]
+    #listSignsDirectory = ["signCanny_1", "signCanny_2", "signCanny_3", "signCanny_4", "signCanny_5"]
+    #listSignsDirectory = ["signOtsu_1", "signOtsu_2", "signOtsu_3", "signOtsu_4", "signOtsu_5"]
+    train, trainLabels, test, testLabels = getTrainTestCNN(listSignsDirectory, 4, 0.8,cv2.COLOR_BGR2RGB)
     train = np.array(train)
     trainLabels = np.array(trainLabels)
     test = np.array(test)
