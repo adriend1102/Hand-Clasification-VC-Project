@@ -38,10 +38,12 @@ Laia Rubio Castro - <a href="https://github.com/laiarubiio">laiarubiio</a> <br /
 
 
 ## Version History
+* 2.0
+    * Updates to <i>handSegmentation.py</i> and <i>handClasification.py</i> + Classification Matrices added + <i>CNN.py</i> and <i>CNN.ipynb</i> added
 * 1.1
-    * Initial version handClasification.py added
+    * Initial version <i>handClasification.py</i> added
 * 1.0
-    * makeDataset.py and handSegmentation.py added
+    * <i>makeDataset.py</i> and <i>handSegmentation.py</i> added
 * 0.1
     * Initial Release: Organization of repository + <i>makeDataset.py</i> uploaded
  
