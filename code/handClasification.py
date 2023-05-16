@@ -4,12 +4,15 @@ Hand Clasification from segmented images
 """
 
 import cv2
-#import numpy as np
+import numpy as np
 import os
 import random
 import time
 import seaborn as sn
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import random
+import cv2
 
 from skimage.feature import hog
 
@@ -25,6 +28,104 @@ from sklearn.svm import SVC
 import warnings
 warnings.filterwarnings("ignore")
 
+def plot_image(i, predictions_array, true_labels, images):
+    """
+    Esta función se encarga de mostrar una imagen junto con su etiqueta de predicción.
+
+    Argumentos:
+    - i: Índice de la imagen dentro de las listas predictions_array, true_labels y images.
+    - predictions_array: Un arreglo de predicciones para cada imagen.
+    - true_labels: Un arreglo de las etiquetas reales de las imágenes.
+    - images: Un arreglo de las imágenes a mostrar.
+
+    Retorna:
+    - None
+
+    """
+    predictions_array, true_label, img = predictions_array[i], true_labels[i], images[i]
+    plt.grid(False)
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.imshow(img, cmap=plt.cm.binary)
+    index = np.where(true_label == 1)[0][0]
+    #index += 1
+    #print(index)
+    predicted_label = np.argmax(predictions_array)
+    #print(predicted_label)
+    if predicted_label == index:
+        color = 'blue'
+    else:
+        color = 'red'
+    #print(class_names[predicted_label])
+    plt.xlabel(f"Prediccion: {predicted_label+1}", color=color)
+
+def plot_value_array(i, predictions_array, true_label):
+    """
+    Esta función se encarga de mostrar un gráfico de barras que representa los valores de confianza de las predicciones.
+
+    Argumentos:
+    - i: Índice del elemento dentro de las listas predictions_array y true_label.
+    - predictions_array: Un arreglo de predicciones para cada elemento.
+    - true_label: Un arreglo de las etiquetas reales de los elementos.
+
+    Retorna:
+    - None
+
+    """
+    predictions_array, true_label = predictions_array[i], true_label[i]
+    #print(predictions_array.max())
+    plt.grid(False)
+    plt.xticks([])
+    plt.yticks([])
+    thisplot = plt.bar(range(5), predictions_array, color="#888888")
+    plt.ylim([0,1])
+    predicted_label = np.argmax(predictions_array)
+    
+    index = np.where(true_label == 1)[0][0]
+    
+    thisplot[predicted_label].set_color('red')
+    thisplot[index].set_color('blue')
+
+# Obtenemos las predicciones del modelo utilizando X_test como entrada
+
+def tablaAciertos(predictions, labels, imatges):
+    """
+    Esta función se encarga de mostrar una tabla de imágenes con sus etiquetas de predicción y los valores de confianza.
+
+    Argumentos:
+    - predictions: Un arreglo de predicciones para cada imagen.
+    - labels: Un arreglo de las etiquetas reales de las imágenes.
+    - imatges: Un arreglo de las imágenes a mostrar.
+
+    Retorna:
+    - None
+
+    """
+    numrows=5
+    numcols=3
+    numimages = numrows*numcols
+
+    plt.figure(figsize=(2*2*numcols, 2*numrows))
+
+    # Iteramos sobre las primeras 15 imágenes y etiquetas de X_test y y_test
+    for i in range(15):
+      plt.subplot(numrows, 2*numcols, 2*i+1)
+      plot_image(i, predictions, labels, imatges)
+      plt.subplot(numrows, 2*numcols, 2*i+2)
+      plot_value_array(i, predictions, labels)
+
+    plt.show()
+class myCallback(tf.keras.callbacks.Callback):
+    """
+    clase Callback para limitante
+    """
+    def on_epoch_end(self, epoch, logs={}):
+        if(logs.get('accuracy') > 0.95):
+            print("\nReached 95% accuracy so cancelling training!")
+            self.model.stop_training = True
+
+callbacks = myCallback()
 
 # Split dataset
 def getTrainTest(listSignsDirectory, sampleDiv, pTrain, typeIm):
@@ -299,10 +400,48 @@ if __name__ == '__main__':
     print("Temps: " + str(tSvm) + "\n")
     
     #####################################################################################
+    listSignsDirectory = ["sign_1", "sign_2", "sign_3", "sign_4", "sign_5"]
+    train, trainLabels, test, testLabels = getTrainTest(listSignsDirectory, 4, 0.8,cv2.COLOR_BGR2RGB)
+    train = np.array(train)
+    trainLabels = np.array(trainLabels)
+    test = np.array(test)
+    testLabels = np.array(testLabels)
 
     t0 = time.time()
     print("\n------ Model CNN ------")
+    
+    #Crear el modelo, este caso tendra 3 capas de 128 neuronas
+
+    modelCNN = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(32, (3,3), input_shape=[100, 150, 3], activation=tf.nn.relu),
+        tf.keras.layers.MaxPooling2D(2,2),#2,2 es el tamaño de la matriz
+    
+        tf.keras.layers.Conv2D(64, (3,3), input_shape=[100, 150, 3], activation=tf.nn.relu),
+        tf.keras.layers.MaxPooling2D(2,2),#2,2 es el tamaño de la matriz
+    
+        tf.keras.layers.Flatten(),
+
+        tf.keras.layers.Dense(128, activation=tf.nn.relu), #1a capa oculta activacion relu
+        tf.keras.layers.Dense(128, activation=tf.nn.relu), #2a capa oculta activacion relu
+        tf.keras.layers.Dense(128, activation=tf.nn.relu), #2a capa oculta activacion relu
+        tf.keras.layers.Dense(5, activation=tf.nn.softmax), #capa de salida 15 salidas posibles
+    ])
+    modelCNN.compile(
+        optimizer = 'adam',
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+    modelCNN.summary()
+    historialCNN = modelCNN.fit(train, trainLabels, epochs = 50)
+    predictions = modelCNN.predict(test, verbose=False)
+    
+    #Evaluar nuestro modelo ya entrenado, contra el dataset de pruebas
+    print("Resultado en las pruebas CNN con OHE: ")
+    test_loss, test_accuracy = modelCNN.evaluate(test, testLabels)
+
+
     tSvm = time.time() - t0
+    tablaAciertos(predictions, testLabels, test)
     print("Temps: " + str(tSvm) + "\n")
     
     #####################################################################################
