@@ -44,7 +44,7 @@ Laia Rubio Castro - <a href="https://github.com/laiarubiio">laiarubiio</a> <br /
     * Classification Report added
 * 2.0
     * Updates to <i>handSegmentation.py</i>
-    * Updates to<i>handClasification.py</i>
+    * Updates to <i>handClasification.py</i>
     * Images of Confusion Matrices added
     * <i>CNN.py</i> and <i>CNN.ipynb</i> added
 * 1.1
