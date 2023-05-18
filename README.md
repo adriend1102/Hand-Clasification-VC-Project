@@ -38,12 +38,19 @@ Laia Rubio Castro - <a href="https://github.com/laiarubiio">laiarubiio</a> <br /
 
 
 ## Version History
+* 2.1
+    * Images of CNN's Confusion Matrices added
+    * Updates to<i>handClasification.py</i>
 * 2.0
-    * Updates to <i>handSegmentation.py</i> and <i>handClasification.py</i> + Classification Matrices added + <i>CNN.py</i> and <i>CNN.ipynb</i> added
+    * Updates to <i>handSegmentation.py</i>
+    * Updates to<i>handClasification.py</i>
+    * Images of Confusion Matrices added
+    * <i>CNN.py</i> and <i>CNN.ipynb</i> added
 * 1.1
     * Initial version <i>handClasification.py</i> added
 * 1.0
-    * <i>makeDataset.py</i> and <i>handSegmentation.py</i> added
+    * <i>makeDataset.py</i> added
+    * <i>handSegmentation.py</i> added
 * 0.1
     * Initial Release: Organization of repository + <i>makeDataset.py</i> uploaded
  
