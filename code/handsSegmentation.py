@@ -10,8 +10,17 @@ from skimage.filters import (threshold_otsu, threshold_niblack,threshold_sauvola
 
 
 def Sobel(src):
-    
-    # definir elemento estructurante
+    """
+    Esta función se encarga de aplicar el algoritmo de Sobel
+
+    Argumentos:
+    - src: Imagen a segmentar
+        
+    Retorna:
+    - grad: Imagen resultante
+
+    """
+    # Definir elemento estructurante
     kernel = np.ones((30,30), np.uint8)
     kernel2 = np.ones((2,2), np.uint8)
     
@@ -37,7 +46,18 @@ def Sobel(src):
     
     return grad
 
+
 def color_filter(src):
+    """
+    Esta función se encarga de aplicar la segmentacion por color
+
+    Argumentos:
+    - src: Imagen a segmentar
+        
+    Retorna:
+    - hand: Imagen resultante
+
+    """
     img_HSV = cv2.cvtColor(src, cv2.COLOR_RGB2HSV)
 
     Lfilter = (0,10,20)
@@ -52,8 +72,18 @@ def color_filter(src):
 
     return hand
 
-def canny(src):
 
+def canny(src):
+    """
+    Esta función se encarga de aplicar el algoritmo de Canny
+
+    Argumentos:
+    - src: Imagen a segmentar
+        
+    Retorna:
+    - cannyIm: Imagen resultante
+
+    """
     gray_image = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
 
     gauss = cv2.GaussianBlur(gray_image, (5, 5), 0)
@@ -61,13 +91,26 @@ def canny(src):
 
     return cannyIm
 
+
 def otsu(src):
+    """
+    Esta función se encarga de aplicar el algoritmo de Otsu
+
+    Argumentos:
+    - src: Imagen a segmentar
+        
+    Retorna:
+    - hand: Imagen resultante
+
+    """
     gray_image = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
 
     _, thresh = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     hand = cv2.erode(thresh, np.ones((2,2), np.uint8), iterations=2)
 
     return hand
+
+
 
 if __name__ == '__main__':
     
@@ -77,8 +120,9 @@ if __name__ == '__main__':
     listSignsDirectoryCanny = ["signCanny_1", "signCanny_2", "signCanny_3", "signCanny_4", "signCanny_5"]
     listSignsDirectoryOtsu = ["signOtsu_1", "signOtsu_2", "signOtsu_3", "signOtsu_4", "signOtsu_5"]
 
+
     print("Applying Sobel to frames...\n")
-    for directory, new in zip(listSignsDirectory, listSignsDirectorySobel): #Nueva lista en zip
+    for directory, new in zip(listSignsDirectory, listSignsDirectorySobel):
         
         relativePath = "../dataset/" + directory
         print("Transforming images from " + relativePath)
@@ -87,12 +131,12 @@ if __name__ == '__main__':
             imSobel = Sobel(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
             
             cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imSobel)
-            # cv2.imwrite ...
         
         print("New images saved in " + new + "\n")
     
+    
     print("Applying Color Filter to frames...\n")
-    for directory, new in zip(listSignsDirectory, listSignsDirectoryColorFilter):  # Nueva lista en zip
+    for directory, new in zip(listSignsDirectory, listSignsDirectoryColorFilter):
 
         relativePath = "../dataset/" + directory
         print("Transforming images from " + relativePath)
@@ -101,13 +145,12 @@ if __name__ == '__main__':
             imCF = color_filter(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
 
             cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imCF)
-            # cv2.imwrite ...
 
         print("New images saved in " + new + "\n")
 
     
     print("Applying Canny to frames...\n")
-    for directory, new in zip(listSignsDirectory, listSignsDirectoryCanny):  # Nueva lista en zip
+    for directory, new in zip(listSignsDirectory, listSignsDirectoryCanny):
 
         relativePath = "../dataset/" + directory
         print("Transforming images from " + relativePath)
@@ -116,12 +159,12 @@ if __name__ == '__main__':
             imCanny = canny(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
 
             cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imCanny)
-            # cv2.imwrite ...
 
         print("New images saved in " + new + "\n")
 
+
     print("Applying Otsu to frames...\n")
-    for directory, new in zip(listSignsDirectory, listSignsDirectoryOtsu):  # Nueva lista en zip
+    for directory, new in zip(listSignsDirectory, listSignsDirectoryOtsu):
 
         relativePath = "../dataset/" + directory
         print("Transforming images from " + relativePath)
@@ -130,7 +173,6 @@ if __name__ == '__main__':
             imOtsu = otsu(cv2.imread(relativePath + "/" + directory + "_" + str(frame) + ".jpg"))
 
             cv2.imwrite("../dataset/" + new + "/" + new + "_" + str(frame) + ".jpg", imOtsu)
-
 
         print("New images saved in " + new + "\n")
 

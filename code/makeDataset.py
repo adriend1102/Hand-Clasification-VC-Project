@@ -6,10 +6,21 @@ Creation dataset from videos
 import cv2
 from scipy import misc
 from PIL import Image
-import numpy as np    
+
 
 def getFrames(file, destination, c):
-    TAMANO_IMG=100
+    """
+    Esta función se encarga de leer los frames de los videos
+
+    Argumentos:
+    - file: Path del video a leer
+    - destination: Path de la destinació de los frames leidos
+    - c: Contador con ultima frame leida
+    
+    Retorna:
+    - c: Contador con ultima frame leida
+
+    """
     print("Reading " + file)
     vidcap = cv2.VideoCapture(file)
     success,image = vidcap.read()
@@ -36,17 +47,18 @@ if __name__ == '__main__':
         
         # Llegir opcions a + c
         for opcAC in listOpcAC:
-            fileA = "dataset/videos/" + sign + opcAC + "a" + ".mp4"
-            fileC = "dataset/videos/" + sign + opcAC + "c" + ".MOV"
-            destination = "dataset/sign_" + sign
+            fileA = "../dataset/videos/" + sign + opcAC + "a" + ".mp4"
+            fileC = "../dataset/videos/" + sign + opcAC + "c" + ".MOV"
+            destination = "../dataset/sign_" + sign
+            
             c = getFrames(fileA, destination, c)
             c = getFrames(fileC, destination, c)
             
         
         # Llegir opcions b
         for opc in listOpcB:
-            file = "dataset/videos/" + sign + opc + ".mp4"
-            destination = "dataset/sign_" + sign
+            file = "../dataset/videos/" + sign + opc + ".mp4"
+            destination = "../dataset/sign_" + sign
             c = getFrames(file, destination, c)
             
         countSigns[i] += c
