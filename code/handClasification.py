@@ -23,8 +23,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 
-from joblib import dump
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -292,6 +290,7 @@ def tablaAciertos(predictions, labels, imatges):
 
 if __name__ == '__main__':
    
+    #listSignsDirectory = ["sign_1", "sign_2", "sign_3", "sign_4", "sign_5"]
     #listSignsDirectory = ["signSobel_1", "signSobel_2", "signSobel_3", "signSobel_4", "signSobel_5"]
     #listSignsDirectory = ["signCF_1", "signCF_2", "signCF_3", "signCF_4", "signCF_5"]
     #listSignsDirectory = ["signCanny_1", "signCanny_2", "signCanny_3", "signCanny_4", "signCanny_5"]
@@ -336,13 +335,8 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix Knn + HOG Features")
     print("\n", classification_report(testLabels, knn_predictionsHOG))
     print("Temps: " + str(tKnn) + "\n")
-
-    #guarda modelo en modelKNN.joblib
-    dump(knn, '../game/models/modelKNN.joblib')
-
-    #knn = load('knn.joblib')
-
-
+         
+    
     #####################################################################################
 
     print("\n------ Logistic Regression ------")
@@ -373,9 +367,6 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix Logistic Regression + HOG Features")
     print("\n", classification_report(testLabels, lr_predictionsHOG))
     print("Temps: " + str(tLr) + "\n")
-
-    # guarda modelo en modelLR.joblib
-    dump(lr, '../game/models/modelLR.joblib')
 
     
     #####################################################################################
@@ -408,9 +399,6 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix Gaussian Naive Bayes + HOG Features")
     print("\n", classification_report(testLabels, gnb_predictionsHOG))
     print("Temps: " + str(tGnb) + "\n")
-
-    # guarda modelo en modelGNB.joblib
-    dump(gnb, '../game/models/modelGNB.joblib')
     
 
     #####################################################################################
@@ -442,9 +430,6 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix Decision Tree + HOG Features")
     print("\n", classification_report(testLabels, dtree_predictionsHOG))
     print("Temps: " + str(tDt) + "\n")
-
-    # guarda modelo en modelDTREE.joblib
-    dump(dtree, '../game/models/modelDTREE.joblib')
     
 
     #####################################################################################
@@ -477,9 +462,6 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix Random Forest Classifier + HOG Features")
     print("\n", classification_report(testLabels, rf_predictionsHOG))
     print("Temps: " + str(tRf) + "\n")
-
-    # guarda modelo en modelRF.joblib
-    dump(rf, '../game/models/modelRF.joblib')
     
 
     #####################################################################################
@@ -512,16 +494,12 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix Super Vector Machine (lineal) + HOG Features")
     print("\n", classification_report(testLabels, svm_predictionsHOG))
     print("Temps: " + str(tSvm) + "\n")
-
-    # guarda modelo en modelSVM.joblib
-    dump(svm, '../game/models/modelSVM.joblib')
     
   
     #####################################################################################
-
+  
     print("\n------ Model CNN ------")
     
-    #listSignsDirectory = ["sign_1", "sign_2", "sign_3", "sign_4", "sign_5"]
     train, trainLabels, test, testLabels = getTrainTestCNN(listSignsDirectory, 2, 0.8, cv2.IMREAD_GRAYSCALE, 8)
     
     # Get hog descriptors
@@ -578,5 +556,5 @@ if __name__ == '__main__':
     
   
     #####################################################################################
-
+  
     
