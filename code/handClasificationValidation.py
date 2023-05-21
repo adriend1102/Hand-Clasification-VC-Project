@@ -14,7 +14,19 @@ from sklearn.model_selection import cross_validate
 
 
 def interpretScores(listScores, rangeValues, nameValues, title):
-    
+    """
+    Esta función se encarga de mostrar las graficas con los resultados
+
+    Argumentos:
+    - listScores: Lista con valores y de la gràfica
+    - rangeValues: Lista con valores x de la gràfica
+    - true_labels: Nom valors x de la gràfica
+    - title: Titol gràfiques
+
+    Retorna:
+    - None
+
+    """
     prec = []
     recall = []
     f1 = []
@@ -57,7 +69,6 @@ if __name__ == '__main__':
     # K Fold
     cv = KFold(n_splits=10, random_state=1, shuffle=True)
     
-    """
     ##########################################################################################
     
     # Hiperparametros KNN
@@ -92,7 +103,7 @@ if __name__ == '__main__':
     
     
     ##########################################################################################
-    """
+
     print("\n Metricas en diferentes divisiones train-test KNN + SVM")
     
     listScoresKNN = []
@@ -106,7 +117,7 @@ if __name__ == '__main__':
     # Probar models amb diferents percentatges de divisio
     percentatges = [0.5, 0.6, 0.7, 0.8]
     listSignsDirectory = ["signOtsu_1", "signOtsu_2", "signOtsu_3", "signOtsu_4", "signOtsu_5"]
-    """
+
     for p in percentatges:
       
         print("Divisio " + str(int(p*100)) + "-" + str(int((1-p)*100)))
@@ -150,14 +161,13 @@ if __name__ == '__main__':
         listScoresSVM_Hog.append(cross_validate(svm, testHOG, testLabels, cv=cv, scoring=('precision_weighted', 'recall_weighted', 'f1_weighted', )))
           
         
-    #########################################################################################
-    
+    # Mostrar resultats    
     interpretScores(listScoresKNN, percentatges, 'Percentatges de train', 'KNN')
     interpretScores(listScoresKNN_Hog, percentatges, 'Percentatges de train', 'KNN amb HOG')
     interpretScores(listScoresSVM, percentatges, 'Percentatges de train', 'SVM')
     interpretScores(listScoresSVM_Hog, percentatges, 'Percentatges de train', 'SVM amb HOG')
     
-    """   
+   
     ##########################################################################################
 
     print("\n Metricas en diferentes divisiones train-test CNN")
