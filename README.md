@@ -41,9 +41,14 @@ Laia Rubio Castro - <a href="https://github.com/laiarubiio">laiarubiio</a> <br /
 * 3.0
     * Game files added  
     * <i>handClasificationValidation.py</i> added
+    * Updates to<i>makeDataset.py</i>
+    * Updates to<i>handSegmentation.py</i>
     * Updates to<i>handClasification.py</i>
     * Updates to Classification Report
     * Validation's Images added
+
+<br />
+
 * 2.1
     * Images of CNN's Confusion Matrices added
     * Updates to<i>handClasification.py</i>
@@ -52,11 +57,17 @@ Laia Rubio Castro - <a href="https://github.com/laiarubiio">laiarubiio</a> <br /
     * Updates to <i>handSegmentation.py</i>
     * Updates to <i>handClasification.py</i>
     * <i>CNN.py</i> and <i>CNN.ipynb</i> added
+
+<br />
+
 * 1.1
     * Initial version <i>handClasification.py</i> added
 * 1.0
     * <i>makeDataset.py</i> added
     * <i>handSegmentation.py</i> added
+
+<br />
+
 * 0.1
     * Initial version DeteccioMovimentMaPerControlVideojoc added
     * Organization of repository
