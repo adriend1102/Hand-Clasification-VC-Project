@@ -38,6 +38,9 @@ Laia Rubio Castro - <a href="https://github.com/laiarubiio">laiarubiio</a> <br /
 
 
 ## Version History
+* 3.1
+    * Presentation of the Project added
+    * More models added
 * 3.0
     * Game files added  
     * <i>handClasificationValidation.py</i> added
