@@ -13,7 +13,6 @@ import globals
 
 #Facemesh
 import cv2
-#import mediapipe as mp
 import math
 from webcam import Webcam
 import tensorflow as tf
@@ -24,10 +23,8 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
 
-        self.mp_face_mesh = mp.solutions.face_mesh
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_drawing_styles = mp.solutions.drawing_styles
         self.cnn_model = tf.keras.models.load_model("models/modelCNN.h5")
+        self.cnn_otsu_model = tf.keras.models.load_model("models/modelCNNOtsu.h5")
         pygame.init()
         pygame.display.set_caption("Plataformas")
 
@@ -280,35 +277,7 @@ class Game:
 
     def render_camera(self):
         webcamImageSurface = pygame.image.frombuffer(self.webcamImage, (int(self.webcam.width()), int(self.webcam.height())), "BGR")
-        """
-        #Mostrar la boca
-        self.mouth_left_x = self.mouth_left_x - .03
-        if self.mouth_left_x < 0:
-            self.mouth_left_x = 0
-        self.mouth_right_x = self.mouth_right_x + .03
-        if self.mouth_right_x > 1:
-            self.mouth_right_x = 1
 
-        self.mouth_top_y = self.mouth_top_y - .03
-        if self.mouth_top_y < 0:
-            self.mouth_top_y = 0
-        self.mouth_bottom_y = self.mouth_bottom_y + .03
-        if self.mouth_bottom_y > 1:
-            self.mouth_bottom_y = 1
-        mouthRect = pygame.Rect(
-            int(1000),
-            int(1500), 
-            int(1000),
-            int(1500)
-        )
-        onlyMouthSurface = pygame.Surface((
-            int(1000),
-            int(1500)
-        ))
-
-        #onlyMouthSurface.blit(webcamImageSurface, (0,0), mouthRect)
-        mouth_ratio = onlyMouthSurface.get_rect().height / onlyMouthSurface.get_rect().width
-        """
         webcam_area_width = 150
         webcam_area_height = 100
         webcamScaled = pygame.transform.scale(webcamImageSurface, (int(webcam_area_width),int(webcam_area_height)))
@@ -334,24 +303,43 @@ class Game:
 
     def process_camera(self):
         image = self.webcam.read()
-        aux = image
+        
         #print("dimensiones:",image.shape)
         if image is not None:
-            #image.flags.writeable = False
+            #CNN:
+            """
             image = cv2.flip(image, 1)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            
+            aux = image
             image = cv2.resize(image, (150,100))
             image = np.expand_dims(image, axis=0)  # Agregar dimensión de lote
+            results = self.cnn_model.predict(image, verbose=False)
+            results = np.argmax(results)
 
+            aux = cv2.cvtColor(aux, cv2.COLOR_RGB2BGR)
+            self.webcamImage = aux
+            """
+            #CNN otsu:
+            
+            image = cv2.flip(image, 1)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            _, image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            image = cv2.erode(image, np.ones((2,2), np.uint8), iterations=2)
+            aux = image
+            image = cv2.resize(image, (150,100))
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)  # Convertir a 3 canales (RGB)
+            image = np.expand_dims(image, axis=0)  # Agregar dimensión de lote
+            results = self.cnn_otsu_model.predict(image, verbose=False)
+            results = np.argmax(results)
+            aux = cv2.cvtColor(aux, cv2.COLOR_RGB2BGR)
+            self.webcamImage = aux
             #print("dimensiones:",image.shape)
             #image = cv2.resize(image, (150,100))
             #image.flags.writeable = True
             #image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            results = self.cnn_model.predict(image, verbose=False)
-            results = np.argmax(results)
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            self.webcamImage = aux
+
+            
+            
             print(results)
             if results is not None:
                 self.no_face = False
